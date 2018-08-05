@@ -1,41 +1,9 @@
 import React, { Component } from 'react';
 import { View, TextInput, StyleSheet, Button, Text, FlatList, Image, PixelRatio, TouchableOpacity, Platform, ActivityIndicator, Alert } from 'react-native';
-import { RNCamera } from 'react-native-camera';
-import { StackNavigator } from 'react-navigation';
-
-import ScanBarcodeModal from './scan-barcode-modal';
 
 import Icon from 'react-native-vector-icons/dist/MaterialIcons';
 
-class Item extends Component {
-  constructor(props) {
-    super(props);
-
-  }
-
-  render() {
-    return <TouchableOpacity style={styles.itemContainer} onPress={this.props.onPress}>
-      <View style={[styles.row]}>
-        <Image style={styles.itemContainerImage} source={require('../resources/avena.jpg')} />
-        <View>
-          <Text>Avena Alpina</Text>
-          <Text>Exito Calle 100</Text>
-        </View>
-      </View>
-
-      <View style={[styles.row, styles.itemContainerSecondRow]}>
-        <View style={[styles.row]}>
-          <Icon name="location-on" size={20} color="#000" />
-          <Text>2.0 km</Text>
-        </View>
-
-        <View>
-          <Text>$25.000</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  }
-}
+import Item from './item';
 
 export default class Home extends Component {
   static navigationOptions = {
@@ -46,6 +14,9 @@ export default class Home extends Component {
     lat: null,
     lng: null,
     isLoading: true,
+    query: '',
+    barcode: '',
+    products: [],
   }
 
   constructor(props) {
@@ -54,6 +25,7 @@ export default class Home extends Component {
     this.onBarcodeRead = this.onBarcodeRead.bind(this);
     this.showBarScannerModal = this.showBarScannerModal.bind(this);
     this.onPressItem = this.onPressItem.bind(this);
+    this.onQuerySearch = this.onQuerySearch.bind(this);
   }
 
   componentDidMount() {
@@ -77,6 +49,11 @@ export default class Home extends Component {
 
   onBarcodeRead(barcode, barcodeType) {
     console.log('Barcode: ', barcode);
+    this.setState({
+      barcode: barcode,
+    }, () => {
+      this.performRequest();
+    });
   }
 
   showBarScannerModal() {
@@ -97,26 +74,83 @@ export default class Home extends Component {
     });
   }
 
+  fetchWrapper(url, options, timeout) {
+    return new Promise((resolve, reject) => {
+      fetch(url, options).then(resolve).catch(reject);
+
+      if (timeout) {
+        const e = new Error("Connection timed out");
+        setTimeout(reject, timeout, e);
+      }
+    });
+  }
+
+  onQuerySearch(query) {
+    this.setState({
+      query
+    }, () => {
+      this.performRequest();
+    });
+  }
+
+  performRequest() {
+    this.setState({ isLoading: true, products: [] })
+
+    const search = this.state.query ? `q=${this.state.query}` : `barcode=${this.state.barcode}`;
+    this.fetchWrapper(`http://192.168.20.140:1337/products?lat=${this.state.lat}&lng=${this.state.lng}&${search}`, {}, 5000).then(response => response.json()).then(response => {
+      console.log('Good Response: ', response);
+      this.setState({
+        isLoading: false,
+        products: response
+      });
+
+    }).catch(err => {
+      console.log('Err: ', err);
+      this.setState({
+        isLoading: false,
+        products: [
+          {
+            "id": 1,
+            "name": "Name",
+            "description": "Description",
+            "price": 12.500,
+            "image": "https://url",
+            "establishment": {
+              "id": 1,
+              "name": "Exito",
+              "distance": 1500,
+              "verified": true
+            }
+          }
+        ]
+
+      })
+    })
+  }
+
   render() {
-    if (this.state.isLoading) {
+    if (this.state.isLoading && !this.state.query && !this.state.barcode) {
       return <ActivityIndicator />
     }
 
     return <View>
       <View style={styles.container}>
-        <TextInput style={styles.input} />
+        <TextInput placeholder="Type a query term" style={styles.input} value={this.state.query} onChangeText={this.onQuerySearch} />
         <Icon name="photo-camera" size={30} color="#000" onPress={this.showBarScannerModal} />
       </View>
 
-      {/*<View style={styles.emptyContainer}>
+      {!this.state.query && !this.state.barcode && <View style={styles.emptyContainer}>
         <Text>Type something to start the magic...</Text>
-  </View>*/}
+      </View>}
 
-      <FlatList
+      {this.state.isLoading && (this.state.query || this.state.barcode) && <ActivityIndicator />}
+
+      {this.state.products && this.state.products.length > 0 && <FlatList
         style={styles.flatList}
-        data={[{ key: '112', name: 'Product 1', id: 112, establishmentId: 1 }, { key: '113', name: 'Product 2', id: 113, establishmentId: 1 }]}
+        data={this.state.products}
+        keyExtractor={(item, index) => '' + item.id + item.establishment.id}
         renderItem={({ item }) => <Item item={item} onPress={() => this.onPressItem(item)} />}
-      />
+      />}
     </View>
   }
 }
