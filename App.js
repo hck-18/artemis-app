@@ -8,12 +8,12 @@
 
 import React, { Component } from 'react';
 
-import MainStackNavigation from './src/navigation/main-stack-navigation';
+import MainModalNavigation from './src/navigation/main-modal-navigation';
 
 export default class App extends Component {
   render() {
     return (
-      <MainStackNavigation />
+      <MainModalNavigation />
     );
   }
 }

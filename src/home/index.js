@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
-import { View, TextInput, StyleSheet, Text, FlatList, Image, PixelRatio } from 'react-native';
+import { View, TextInput, StyleSheet, Button, Text, FlatList, Image, PixelRatio, TouchableOpacity } from 'react-native';
+import { RNCamera } from 'react-native-camera';
+import { StackNavigator } from 'react-navigation';
+
+import ScanBarcodeModal from './scan-barcode-modal';
 
 import Icon from 'react-native-vector-icons/dist/MaterialIcons';
 
@@ -33,11 +37,26 @@ export default class Home extends Component {
     title: 'Home', styles
   };
 
+  constructor(props) {
+    super(props);
+
+    this.onBarcodeRead = this.onBarcodeRead.bind(this);
+    this.showBarScannerModal = this.showBarScannerModal.bind(this);
+  }
+
+  onBarcodeRead(barcode, barcodeType) {
+    console.log('Barcode: ', barcode);
+  }
+
+  showBarScannerModal() {
+    this.props.navigation.navigate('ScanBarcodeModal', { onBarcodeRead: this.onBarcodeRead.bind(this) });
+  }
+
   render() {
     return <View>
       <View style={styles.container}>
         <TextInput style={styles.input} />
-        <Icon name="photo-camera" size={30} color="#000" />
+        <Icon name="photo-camera" size={30} color="#000" onPress={this.showBarScannerModal} />
       </View>
 
       {/*<View style={styles.emptyContainer}>
@@ -98,5 +117,10 @@ const styles = StyleSheet.create({
   },
   flatList: {
     marginTop: 16,
-  }
+  },
+  preview: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center'
+  },
 });
