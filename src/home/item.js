@@ -12,21 +12,21 @@ export default class Item extends Component {
   render() {
     return <TouchableOpacity style={styles.itemContainer} onPress={this.props.onPress}>
       <View style={[styles.row]}>
-        <Image style={styles.itemContainerImage} source={require('../resources/avena.jpg')} />
+        <Image style={styles.itemContainerImage} source={'https://via.placeholder.com/50x50'} />
         <View>
-          <Text>Avena Alpina</Text>
-          <Text>Exito Calle 100</Text>
+          <Text>{this.props.item.name}</Text>
+          <Text>{this.props.item.establishment.name}</Text>
         </View>
       </View>
 
       <View style={[styles.row, styles.itemContainerSecondRow]}>
         <View style={[styles.row]}>
           <Icon name="location-on" size={20} color="#000" />
-          <Text>2.0 km</Text>
+          <Text>{this.props.item.establishment.distance * 1000} mts</Text>
         </View>
 
         <View>
-          <Text>$25.000</Text>
+          <Text>{this.props.item.price}></Text>
         </View>
       </View>
     </TouchableOpacity>

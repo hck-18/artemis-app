@@ -61,13 +61,16 @@ export default class Home extends Component {
   }
 
   onPressItem(item) {
+    console.log('Item: ', item);
     const bundle = {
-      productName: item.name,
       productId: item.id,
-      establishmentId: item.establishmentId,
+      productName: item.name,
+      establishmentId: item.establishment.id,
       lat: this.state.lat,
       lng: this.state.lng,
     };
+
+    console.log('Bundle: ', bundle);
 
     this.props.navigation.navigate('ProductDetails', {
       bundle
@@ -108,22 +111,7 @@ export default class Home extends Component {
       console.log('Err: ', err);
       this.setState({
         isLoading: false,
-        products: [
-          {
-            "id": 1,
-            "name": "Name",
-            "description": "Description",
-            "price": 12.500,
-            "image": "https://url",
-            "establishment": {
-              "id": 1,
-              "name": "Exito",
-              "distance": 1500,
-              "verified": true
-            }
-          }
-        ]
-
+        products: []
       })
     })
   }

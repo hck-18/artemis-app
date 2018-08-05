@@ -11,7 +11,7 @@ export default class ProductDetails extends Component {
 
   state = {
     isLoading: true,
-    reponse: null,
+    response: null,
   }
 
   fetchWrapper(url, options, timeout) {
@@ -35,12 +35,13 @@ export default class ProductDetails extends Component {
       })
       .catch((error) => {
         this.setState({ isLoading: false });
+        Alert.alert('Error loading data')
         console.error(error);
       });
   }
 
   render() {
-    if (this.state.isLoading) {
+    if (this.state.isLoading || !this.state.response) {
       return <View>
         <ActivityIndicator />
       </View>
@@ -48,7 +49,7 @@ export default class ProductDetails extends Component {
 
     return (
       <View>
-        <Image source={require('../resources/avena.jpg')} />
+        <Image source={'https://via.placeholder.com/50x50'} />
 
         <Text>{this.state.response.name}</Text>
 
