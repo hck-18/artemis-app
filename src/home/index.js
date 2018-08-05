@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, TextInput, StyleSheet, Button, Text, FlatList, Image, PixelRatio, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet, Button, Text, FlatList, Image, PixelRatio, TouchableOpacity, Platform, ActivityIndicator, Alert } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { StackNavigator } from 'react-navigation';
 
@@ -42,12 +42,37 @@ export default class Home extends Component {
     title: 'Home', styles
   };
 
+  state = {
+    lat: null,
+    lng: null,
+    isLoading: true,
+  }
+
   constructor(props) {
     super(props);
 
     this.onBarcodeRead = this.onBarcodeRead.bind(this);
     this.showBarScannerModal = this.showBarScannerModal.bind(this);
     this.onPressItem = this.onPressItem.bind(this);
+  }
+
+  componentDidMount() {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      console.log('Pos: ', pos);
+      this.setState({
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        isLoading: false,
+      })
+    }, (error) => {
+      console.log('Error: ', error);
+      Alert.alert('Error getting your location');
+    }, {
+        enableHighAccuracy: Platform.OS != 'android',
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
   }
 
   onBarcodeRead(barcode, barcodeType) {
@@ -59,13 +84,24 @@ export default class Home extends Component {
   }
 
   onPressItem(item) {
-    console.log('onPress');
+    const bundle = {
+      productName: item.name,
+      productId: item.id,
+      establishmentId: item.establishmentId,
+      lat: this.state.lat,
+      lng: this.state.lng,
+    };
+
     this.props.navigation.navigate('ProductDetails', {
-      name: 'Avena Alpina'
+      bundle
     });
   }
 
   render() {
+    if (this.state.isLoading) {
+      return <ActivityIndicator />
+    }
+
     return <View>
       <View style={styles.container}>
         <TextInput style={styles.input} />
@@ -78,8 +114,8 @@ export default class Home extends Component {
 
       <FlatList
         style={styles.flatList}
-        data={[{ key: 'a' }, { key: 'b' }]}
-        renderItem={({ item }) => <Item item={item} onPress={this.onPressItem} />}
+        data={[{ key: '112', name: 'Product 1', id: 112, establishmentId: 1 }, { key: '113', name: 'Product 2', id: 113, establishmentId: 1 }]}
+        renderItem={({ item }) => <Item item={item} onPress={() => this.onPressItem(item)} />}
       />
     </View>
   }
