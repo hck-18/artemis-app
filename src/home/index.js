@@ -8,8 +8,13 @@ import ScanBarcodeModal from './scan-barcode-modal';
 import Icon from 'react-native-vector-icons/dist/MaterialIcons';
 
 class Item extends Component {
+  constructor(props) {
+    super(props);
+
+  }
+
   render() {
-    return <View style={styles.itemContainer}>
+    return <TouchableOpacity style={styles.itemContainer} onPress={this.props.onPress}>
       <View style={[styles.row]}>
         <Image style={styles.itemContainerImage} source={require('../resources/avena.jpg')} />
         <View>
@@ -28,7 +33,7 @@ class Item extends Component {
           <Text>$25.000</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   }
 }
 
@@ -42,6 +47,7 @@ export default class Home extends Component {
 
     this.onBarcodeRead = this.onBarcodeRead.bind(this);
     this.showBarScannerModal = this.showBarScannerModal.bind(this);
+    this.onPressItem = this.onPressItem.bind(this);
   }
 
   onBarcodeRead(barcode, barcodeType) {
@@ -50,6 +56,13 @@ export default class Home extends Component {
 
   showBarScannerModal() {
     this.props.navigation.navigate('ScanBarcodeModal', { onBarcodeRead: this.onBarcodeRead.bind(this) });
+  }
+
+  onPressItem(item) {
+    console.log('onPress');
+    this.props.navigation.navigate('ProductDetails', {
+      name: 'Avena Alpina'
+    });
   }
 
   render() {
@@ -66,7 +79,7 @@ export default class Home extends Component {
       <FlatList
         style={styles.flatList}
         data={[{ key: 'a' }, { key: 'b' }]}
-        renderItem={({ item }) => <Item item={item} />}
+        renderItem={({ item }) => <Item item={item} onPress={this.onPressItem} />}
       />
     </View>
   }
